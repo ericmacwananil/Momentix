@@ -1,0 +1,246 @@
+// src/pages/HomePage.jsx
+// UPDATED: Real hero image, testimonials, better sections
+
+import { Link } from "react-router-dom";
+import Button from "../components/Button";
+import { events } from "../utils/mockData";
+import EventCard from "../components/EventCard";
+
+const TESTIMONIALS = [
+  {
+    name: "Priya Desai",
+    event: "Birthday Party",
+    text: "Absolutely stunning decoration! The team arrived on time and transformed our hall completely. My daughter was in tears of joy!",
+    rating: 5,
+    avatar: "https://i.pravatar.cc/60?img=47",
+  },
+  {
+    name: "Arjun Mehta",
+    event: "Wedding",
+    text: "Best wedding decorator in Gujarat. The royal mandap was beyond our expectations. Every guest was taking photos!",
+    rating: 5,
+    avatar: "https://i.pravatar.cc/60?img=12",
+  },
+  {
+    name: "Sneha Kapoor",
+    event: "Corporate Event",
+    text: "Very professional team. They set up our entire conference hall in just half a day. Will definitely book again.",
+    rating: 5,
+    avatar: "https://i.pravatar.cc/60?img=32",
+  },
+];
+
+export default function HomePage() {
+  const featuredEvents = events.filter(e => e.availability).slice(0, 3);
+
+  return (
+    <div>
+      {/* ===== HERO SECTION ===== */}
+      <section className="relative min-h-screen sm:min-h-[88vh] flex items-center overflow-hidden">
+        {/* Background image */}
+        <img
+          src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1400&auto=format&fit=crop&q=80"
+          alt="Event decoration"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-transparent" />
+
+        {/* Content (flush-left on larger screens) */}
+        <div className="relative z-10 w-full px-4 sm:px-6 md:px-12 lg:px-24 py-12 sm:py-16 md:py-20 flex justify-start items-center">
+          <div className="max-w-2xl text-left">
+            <span className="inline-block bg-orange-500 text-white text-xs sm:text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 sm:mb-5">
+              ✨ Gujarat's #1 Event Decorator
+            </span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+              Your Dream Event,<br />
+              <span className="text-orange-400">Perfectly Decorated</span>
+            </h1>
+            <p className="text-gray-200 text-sm sm:text-base md:text-lg mt-3 sm:mt-5 leading-relaxed">
+              From intimate birthdays to grand weddings — our expert team handles every detail so you can enjoy every moment.
+            </p>
+
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-6 sm:mt-8 justify-start">
+              <Button to="/events" variant="primary" size="md" className="sm:size-lg shadow-lg shadow-orange-500/30 flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto">Browse Services →</Button>
+              <Button to="/register" variant="secondary" size="md" className="sm:size-lg bg-white/10 backdrop-blur text-white border border-white/30 hover:bg-white/20 flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto">Get Started Free</Button>
+            </div>
+
+            {/* Quick stats under buttons */}
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 mt-8 sm:mt-10 justify-start">
+              {["500+", "Events Done", "50+", "Expert Staff", "4.9★", "Avg Rating"].reduce((acc, val, i) => {
+                if (i % 2 === 0) acc.push([]);
+                acc[acc.length - 1].push(val);
+                return acc;
+              }, []).map(([n, l]) => (
+                <div key={l}>
+                  <p className="text-xl sm:text-2xl font-bold text-orange-400">{n}</p>
+                  <p className="text-gray-300 text-xs sm:text-sm">{l}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== EVENT TYPES SECTION ===== */}
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">We Decorate Every Occasion</h2>
+            <p className="text-gray-500 mt-2 text-sm sm:text-base">Choose from our wide range of event packages</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {[
+              {
+                type: "Birthday",
+                image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&auto=format&fit=crop",
+                desc: "Kids & adults parties, baby showers, surprise events",
+                emoji: "🎂",
+                filter: "birthday",
+              },
+              {
+                type: "Wedding",
+                image: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=500&auto=format&fit=crop",
+                desc: "Royal mandaps, stage decor, anniversary celebrations",
+                emoji: "💒",
+                filter: "wedding",
+              },
+              {
+                type: "Corporate",
+                image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop",
+                desc: "Conferences, product launches, office celebrations",
+                emoji: "🏢",
+                filter: "corporate",
+              },
+            ].map((item) => (
+              <Link
+                key={item.type}
+                to={`/events?type=${item.filter}`}
+                className="group relative h-56 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-shadow"
+              >
+                <img
+                  src={item.image}
+                  alt={item.type}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-4 left-4">
+                  <div className="text-2xl mb-1">{item.emoji}</div>
+                  <h3 className="text-white font-bold text-xl">{item.type}</h3>
+                  <p className="text-gray-300 text-xs mt-1">{item.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== HOW IT WORKS ===== */}
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-gray-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">How It Works</h2>
+            <p className="text-gray-500 mt-2 text-sm sm:text-base">Book your perfect event in 4 simple steps</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            {[
+              { step:"01", icon:"🔍", title:"Browse Services", desc:"Explore our decoration packages and find your perfect match" },
+              { step:"02", icon:"📅", title:"Select Date & Venue", desc:"Pick your event date and enter the venue details" },
+              { step:"03", icon:"✅", title:"We Confirm", desc:"Our team reviews and confirms your booking within 24hrs" },
+              { step:"04", icon:"🎉", title:"Enjoy Your Event!", desc:"We decorate, you celebrate without any stress" },
+            ].map((item, i) => (
+              <div key={item.step} className="relative text-center">
+                {/* Connector line */}
+                {i < 3 && (
+                  <div className="hidden md:block absolute top-8 left-[60%] w-full h-0.5 bg-orange-100 z-0" />
+                )}
+                <div className="relative z-10">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-orange-50 border-2 border-orange-100 flex items-center justify-center text-2xl sm:text-3xl mx-auto mb-2 sm:mb-4 shadow-sm">
+                    {item.icon}
+                  </div>
+                  <p className="text-xs font-bold text-orange-400 mb-1">{item.step}</p>
+                  <h4 className="font-bold text-gray-800 text-xs sm:text-sm">{item.title}</h4>
+                  <p className="text-gray-500 text-xs mt-1 sm:mt-1.5 leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== FEATURED EVENTS ===== */}
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 sm:mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">Popular Packages</h2>
+              <p className="text-gray-500 mt-1 text-sm sm:text-base">Most loved by our customers</p>
+            </div>
+            <Link to="/events" className="text-orange-500 font-semibold hover:underline hidden md:block text-sm sm:text-base">
+              View All Packages →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {featuredEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+          <div className="text-center mt-8 md:hidden">
+            <Link to="/events" className="text-orange-500 font-semibold">View All Packages →</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== TESTIMONIALS ===== */}
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-orange-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">What Our Customers Say 💬</h2>
+            <p className="text-gray-500 mt-2 text-sm sm:text-base">500+ happy customers across Gujarat</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full object-cover border-2 border-orange-100" />
+                  <div>
+                    <p className="font-bold text-gray-800 text-sm">{t.name}</p>
+                    <p className="text-orange-500 text-xs">{t.event}</p>
+                  </div>
+                </div>
+                <div className="flex mb-3">
+                  {[...Array(t.rating)].map((_, i) => (
+                    <span key={i} className="text-yellow-400 text-base">★</span>
+                  ))}
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">"{t.text}"</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== CTA SECTION ===== */}
+      <section className="relative py-20 px-4 overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200&auto=format&fit=crop&q=60"
+          alt="celebrate"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-orange-600/85" />
+        <div className="relative text-white text-center max-w-xl mx-auto">
+          <h2 className="text-4xl font-bold">Ready to Celebrate? 🎊</h2>
+          <p className="mt-3 text-orange-100 text-lg">Book your event decoration today and get a free consultation!</p>
+          <div className="flex flex-wrap gap-4 justify-center mt-8">
+            <Button to="/events" variant="primary" size="md" className="!bg-white !text-orange-600 !hover:bg-orange-50 shadow-lg">
+              Browse Packages
+            </Button>
+            <Button to="/register" variant="secondary" size="md" className="!border-white !text-white !hover:bg-white/10">
+              Create Free Account
+            </Button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

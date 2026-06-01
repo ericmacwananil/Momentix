@@ -1,0 +1,173 @@
+// src/utils/mockData.js
+// UPDATED: Real Unsplash images added for professional look
+
+export const events = [
+  {
+    id: "1",
+    title: "Premium Birthday Balloon Decor",
+    eventType: "birthday",
+    description:
+      "Transform any space into a magical birthday paradise. Includes 200+ balloons, LED lights, personalized banner, and stunning flower arrangements. Perfect for both kids and adults.",
+    price: 4999,
+    rating: 4.8,
+    reviews: 124,
+    // Real Unsplash images (free to use)
+    images: [
+      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=600&auto=format&fit=crop",
+    ],
+    features: ["200+ Balloons", "LED Lights", "Custom Banner", "Flower Arch", "Photo Backdrop"],
+    availability: true,
+    duration: "3-4 hours setup",
+    teamSize: 3,
+  },
+  {
+    id: "2",
+    title: "Royal Wedding Stage Decor",
+    eventType: "wedding",
+    description:
+      "Luxury wedding decoration with royal mandap, floral stage, LED lighting, and premium draping. Make your special day truly unforgettable with our experienced team.",
+    price: 49999,
+    rating: 4.9,
+    reviews: 87,
+    images: [
+      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&auto=format&fit=crop",
+    ],
+    features: ["Royal Mandap", "Floral Stage", "LED Lighting", "Premium Draping", "Flower Shower"],
+    availability: true,
+    duration: "1 day setup",
+    teamSize: 8,
+  },
+  {
+    id: "3",
+    title: "Corporate Event Setup",
+    eventType: "corporate",
+    description:
+      "Professional corporate event decoration with stage setup, branded backdrop, premium seating arrangements, and complete AV support for your business events.",
+    price: 24999,
+    rating: 4.7,
+    reviews: 56,
+    images: [
+      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=600&auto=format&fit=crop",
+    ],
+    features: ["Stage Setup", "Branded Backdrop", "Premium Seating", "AV Support", "Registration Desk"],
+    availability: true,
+    duration: "Half day setup",
+    teamSize: 5,
+  },
+  {
+    id: "4",
+    title: "Baby Shower Decoration",
+    eventType: "birthday",
+    description:
+      "Sweet and adorable baby shower setup with pastel balloons, cute photo props, dessert table display, and personalized welcome banner.",
+    price: 3999,
+    rating: 4.6,
+    reviews: 43,
+    images: [
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop",
+    ],
+    features: ["Pastel Balloons", "Photo Props", "Dessert Table", "Welcome Banner", "Diaper Cake"],
+    availability: false,
+    duration: "2-3 hours setup",
+    teamSize: 2,
+  },
+  {
+    id: "5",
+    title: "Anniversary Gold Theme Decor",
+    eventType: "wedding",
+    description:
+      "Elegant gold and white anniversary decoration. Includes floral centerpieces, gold balloon arch, candle lighting, and a romantic ambiance for your special milestone.",
+    price: 12999,
+    rating: 4.8,
+    reviews: 91,
+    images: [
+      "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1464278533981-50106e6176b1?w=600&auto=format&fit=crop",
+    ],
+    features: ["Gold Balloon Arch", "Floral Centerpieces", "Candle Lighting", "Table Setup", "Couple Frame"],
+    availability: true,
+    duration: "4-5 hours setup",
+    teamSize: 4,
+  },
+  {
+    id: "6",
+    title: "Kids Birthday Party Package",
+    eventType: "birthday",
+    description:
+      "Super fun kids party with themed decorations, cartoon character setup, game zone, and colorful balloon arrangements. Creating memories that last a lifetime!",
+    price: 5999,
+    rating: 4.9,
+    reviews: 210,
+    images: [
+      "https://images.unsplash.com/photo-1558636508-e0969431e349?w=600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1502634881401-73bded46a16c?w=600&auto=format&fit=crop",
+    ],
+    features: ["Theme Decorations", "Cartoon Characters", "Game Zone", "Balloon Art", "Birthday Crown"],
+    availability: true,
+    duration: "3-4 hours setup",
+    teamSize: 4,
+  },
+];
+
+export const mockUsers = [
+  { id: "u1", name: "Rahul Sharma",  email: "customer@test.com", password: "test123",  role: "customer",     phone: "9876543210" },
+  { id: "u2", name: "Admin User",    email: "admin@test.com",    password: "admin123", role: "admin",        phone: "9000000001" },
+];
+
+export const mockBookings = [
+  {
+    id: "b1",
+    userId: "u1",
+    customerName: "Rahul Sharma",
+    customerPhone: "9876543210",
+    eventId: "1",
+    eventTitle: "Premium Birthday Balloon Decor",
+    eventType: "birthday",
+    eventDate: "2025-08-15",
+    venueAddress: "123 MG Road, Anand, Gujarat",
+    status: "confirmed",
+    assignedMemberId: null,
+    assignedMemberName: null,
+    price: 4999,
+    createdAt: "2025-07-01",
+  },
+  {
+    id: "b2",
+    userId: "u1",
+    customerName: "Rahul Sharma",
+    customerPhone: "9876543210",
+    eventId: "2",
+    eventTitle: "Royal Wedding Stage Decor",
+    eventType: "wedding",
+    eventDate: "2025-09-20",
+    venueAddress: "Hotel Grand, Vadodara, Gujarat",
+    status: "pending",
+    assignedMemberId: null,
+    assignedMemberName: null,
+    price: 49999,
+    createdAt: "2025-07-10",
+  },
+  {
+    id: "b3",
+    userId: "u4",
+    customerName: "Sneha Patel",
+    customerPhone: "9123456789",
+    eventId: "3",
+    eventTitle: "Corporate Event Setup",
+    eventType: "corporate",
+    eventDate: "2025-08-05",
+    venueAddress: "Tech Park, Ahmedabad",
+    status: "assigned",
+    assignedMemberId: null,
+    assignedMemberName: null,
+    price: 24999,
+    createdAt: "2025-07-05",
+  },
+];
