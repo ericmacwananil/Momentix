@@ -2,9 +2,9 @@
 import { useNavigate } from "react-router-dom";
 
 export default function Button({
-  children,
+  children,           
   onClick,
-  type = "button",
+  type = "button", 
   variant = "primary",
   size = "md",
   disabled = false,

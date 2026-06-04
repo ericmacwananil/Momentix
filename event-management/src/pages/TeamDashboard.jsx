@@ -7,24 +7,24 @@ import sleep from "../utils/sleep";
 
 export default function TeamDashboard() {
   const { user } = useAuth();
-  const [myTasks, setMyTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [myTasks, setMyTasks]   = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [completing, setCompleting] = useState(null); // task id being marked done
 
-  const activeTasks = myTasks.filter((task) => task.status !== "cancelled");
-  const cancelledTasks = myTasks.filter((task) => task.status === "cancelled");
+  const activeTasks    = myTasks.filter((t) => t.status !== "cancelled" && t.status !== "completed");
+  const completedTasks = myTasks.filter((t) => t.status === "completed");
+  const cancelledTasks = myTasks.filter((t) => t.status === "cancelled");
 
+  // ── Fetch my tasks ────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchMyTasks = async () => {
       const start = Date.now();
       try {
-        console.log(`👤 Fetching tasks for team member: ${user.name} (ID: ${user._id})`);
         const res = await api.post("/bookings/my-tasks", { userId: user._id });
-        console.log(`✅ Tasks fetched:`, res.data.data);
         setMyTasks(res.data.data || []);
       } catch (err) {
         console.error("Failed to fetch tasks:", err);
-        console.log("⚠️ Using fallback mock data...");
-        // Fallback to mock data
+        // fallback mock
         setMyTasks([
           {
             _id: "1",
@@ -47,107 +47,160 @@ export default function TeamDashboard() {
     if (user?._id) fetchMyTasks();
   }, [user]);
 
+  // ── Mark task as completed ────────────────────────────────────────────────
+  const markCompleted = async (taskId) => {
+    setCompleting(taskId);
+    try {
+      await api.put(`/bookings/${taskId}/status`, { status: "completed" });
+      // update locally so UI reflects immediately
+      setMyTasks((prev) =>
+        prev.map((t) => (t._id === taskId ? { ...t, status: "completed" } : t))
+      );
+    } catch (err) {
+      alert(err?.response?.data?.message || "Failed to mark task as completed. Please try again.");
+    } finally {
+      setCompleting(null);
+    }
+  };
+
+  // ── Tag colors ────────────────────────────────────────────────────────────
+  const typeTag = (type) => {
+    const map = {
+      birthday:  "bg-pink-100 text-pink-700",
+      wedding:   "bg-rose-100 text-rose-700",
+      corporate: "bg-blue-100 text-blue-700",
+    };
+    return map[type] || "bg-gray-100 text-gray-700";
+  };
+
+  // ── Task card ─────────────────────────────────────────────────────────────
+  const TaskCard = ({ task, showComplete = false, cardClass = "bg-white border-gray-100" }) => (
+    <div className={`rounded-2xl shadow-sm border p-5 sm:p-6 ${cardClass}`}>
+      <div className="flex flex-col justify-between gap-4 md:flex-row">
+        <div className="flex-1">
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <h3 className="text-base font-bold text-gray-800 sm:text-lg">
+              {task.eventId?.title || task.eventTitle || "Event"}
+            </h3>
+            <StatusBadge status={task.status} />
+          </div>
+          <div className="mt-1 space-y-1 text-sm text-gray-600">
+            <p>👤 <strong>Customer:</strong> {task.customerName}</p>
+            <p>📞 <strong>Phone:</strong> {task.customerPhone}</p>
+            <p>📅 <strong>Date:</strong> {
+              task.eventDate
+                ? new Date(task.eventDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                : "—"
+            }</p>
+            <p>📍 <strong>Venue:</strong> {task.venueAddress}</p>
+            {task.remarks && (
+              <p className="px-3 py-2 mt-2 font-medium text-orange-600 rounded-lg bg-orange-50">
+                💬 Admin note: {task.remarks}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-row items-center justify-between gap-3 md:flex-col md:items-end md:justify-start md:gap-3">
+          <div className="text-right">
+            <p className="text-xl font-bold text-orange-500 sm:text-2xl">
+              ₹{(task.price || 0).toLocaleString()}
+            </p>
+            <span className={`inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-semibold capitalize ${typeTag(task.eventType)}`}>
+              {task.eventType}
+            </span>
+          </div>
+
+          {/* Mark as Completed button */}
+          {showComplete && (
+            <button
+              onClick={() => markCompleted(task._id)}
+              disabled={completing === task._id}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition bg-green-500 shadow-md hover:bg-green-600 disabled:opacity-60 rounded-xl shadow-green-200 whitespace-nowrap"
+            >
+              {completing === task._id ? (
+                <>
+                  <span className="w-4 h-4 border-2 rounded-full border-white/40 border-t-white animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                <>✅ Mark as Done</>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">🔧 My Assigned Tasks</h1>
-      <p className="text-gray-500 mb-8">Hello {user.name}! Here are your upcoming events.</p>
+    <div className="max-w-5xl px-4 py-8 mx-auto sm:py-10">
+      <h1 className="mb-1 text-2xl font-bold text-gray-800 sm:text-3xl">🔧 My Assigned Tasks</h1>
+      <p className="mb-8 text-sm text-gray-500 sm:text-base">
+        Hello {user.name}! Here are your upcoming events.
+      </p>
 
       {loading ? (
-        <div className="text-center py-20">Loading your tasks...</div>
+        <div className="py-20 text-center text-gray-500">Loading your tasks…</div>
       ) : myTasks.length === 0 ? (
-        <div className="text-center py-20 bg-gray-50 rounded-2xl">
-          <p className="text-5xl mb-4">✅</p>
+        <div className="py-20 text-center border border-gray-100 bg-gray-50 rounded-2xl">
+          <p className="mb-4 text-5xl">✅</p>
           <h3 className="text-xl font-semibold text-gray-700">No tasks assigned yet</h3>
-          <p className="text-gray-400 mt-2">Check back later</p>
+          <p className="mt-2 text-sm text-gray-400">Check back later</p>
         </div>
       ) : (
-        <div className="space-y-8">
-          <div>
+        <div className="space-y-10">
+
+          {/* ── Active Tasks ── */}
+          <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Active Tasks</h2>
+              <h2 className="text-lg font-bold text-gray-800 sm:text-xl">Active Tasks</h2>
               <span className="text-sm text-gray-500">{activeTasks.length} task(s)</span>
             </div>
+
             {activeTasks.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-gray-500">
+              <div className="p-6 text-sm text-gray-500 bg-white border border-gray-100 rounded-2xl">
                 No active tasks right now.
               </div>
             ) : (
               <div className="space-y-4">
                 {activeTasks.map((task) => (
-                  <div key={task._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <div className="flex flex-col md:flex-row justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-bold text-gray-800 text-lg">{task.eventTitle}</h3>
-                          <StatusBadge status={task.status} />
-                        </div>
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <p>👤 <strong>Customer:</strong> {task.customerName}</p>
-                          <p>📞 <strong>Phone:</strong> {task.customerPhone}</p>
-                          <p>📅 <strong>Date:</strong> {task.eventDate}</p>
-                          <p>📍 <strong>Venue:</strong> {task.venueAddress}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-orange-500">₹{task.price.toLocaleString()}</p>
-                        <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                          task.eventType === "birthday" ? "bg-pink-100 text-pink-700" :
-                          task.eventType === "wedding" ? "bg-rose-100 text-rose-700" :
-                          "bg-blue-100 text-blue-700"
-                        }`}>
-                          {task.eventType}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <TaskCard key={task._id} task={task} showComplete={true} />
                 ))}
               </div>
             )}
-          </div>
+          </section>
 
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Cancelled Tasks</h2>
-              <span className="text-sm text-gray-500">{cancelledTasks.length} cancelled</span>
-            </div>
-            {cancelledTasks.length === 0 ? (
-              <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-gray-500">
-                No cancelled tasks.
+          {/* ── Completed Tasks ── */}
+          {completedTasks.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-800 sm:text-xl">Completed Tasks</h2>
+                <span className="text-sm text-gray-500">{completedTasks.length} completed</span>
               </div>
-            ) : (
+              <div className="space-y-4">
+                {completedTasks.map((task) => (
+                  <TaskCard key={task._id} task={task} cardClass="bg-green-50 border-green-100" />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ── Cancelled Tasks ── */}
+          {cancelledTasks.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-800 sm:text-xl">Cancelled Tasks</h2>
+                <span className="text-sm text-gray-500">{cancelledTasks.length} cancelled</span>
+              </div>
               <div className="space-y-4">
                 {cancelledTasks.map((task) => (
-                  <div key={task._id} className="bg-red-50 rounded-2xl shadow-sm border border-red-100 p-6">
-                    <div className="flex flex-col md:flex-row justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-bold text-gray-800 text-lg">{task.eventTitle}</h3>
-                          <StatusBadge status={task.status} />
-                        </div>
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <p>👤 <strong>Customer:</strong> {task.customerName}</p>
-                          <p>📞 <strong>Phone:</strong> {task.customerPhone}</p>
-                          <p>📅 <strong>Date:</strong> {task.eventDate}</p>
-                          <p>📍 <strong>Venue:</strong> {task.venueAddress}</p>
-                          <p className="text-red-600 font-medium">This task was cancelled.</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-red-500">₹{task.price.toLocaleString()}</p>
-                        <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                          task.eventType === "birthday" ? "bg-pink-100 text-pink-700" :
-                          task.eventType === "wedding" ? "bg-rose-100 text-rose-700" :
-                          "bg-blue-100 text-blue-700"
-                        }`}>
-                          {task.eventType}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <TaskCard key={task._id} task={task} cardClass="bg-red-50 border-red-100" />
                 ))}
               </div>
-            )}
-          </div>
+            </section>
+          )}
 
         </div>
       )}

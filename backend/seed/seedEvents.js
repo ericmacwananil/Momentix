@@ -74,9 +74,9 @@ const sampleEvents = [
 ];
 
 const sampleUsers = [
-  { name: "Admin User",  email: "admin@eventease.com",  password: "admin123",  role: "admin",       phone: "9000000001" },
-  { name: "Priya Team",  email: "team@eventease.com",   password: "team123",   role: "team_member", phone: "9000000002" },
-  { name: "Rahul Sharma",email: "customer@eventease.com",password: "test123",  role: "customer",    phone: "9876543210" },
+  { name: "Admin User",  email: "admin@Momentix.com",  password: "admin123",  role: "admin",       phone: "9000000001" },
+  { name: "Priya Team",  email: "team@Momentix.com",   password: "team123",   role: "team_member", phone: "9000000002" },
+  { name: "Rahul Sharma",email: "customer@Momentix.com",password: "test123",  role: "customer",    phone: "9876543210" },
 ];
 
 const seedDB = async () => {
@@ -99,9 +99,9 @@ const seedDB = async () => {
     console.log("✅ Sample users added!");
     console.log("\n🎉 Database seeded successfully!");
     console.log("Login credentials:");
-    console.log("  Admin:    admin@eventease.com / admin123");
-    console.log("  Team:     team@eventease.com  / team123");
-    console.log("  Customer: customer@eventease.com / test123");
+    console.log("  Admin:    admin@Momentix.com / admin123");
+    console.log("  Team:     team@Momentix.com  / team123");
+    console.log("  Customer: customer@Momentix.com / test123");
 
     process.exit(0);
   } catch (error) {

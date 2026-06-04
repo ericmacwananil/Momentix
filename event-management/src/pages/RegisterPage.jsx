@@ -1,14 +1,13 @@
 // src/pages/RegisterPage.jsx
 import { useState } from "react";
-import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 
 const ROLE_OPTIONS = [
-  { id: "customer", label: "Customer", icon: "🧑", desc: "Browse & book events" },
-  { id: "admin", label: "Admin", icon: "👑", desc: "Manage bookings" },
-  { id: "team_member", label: "Team Member", icon: "🔧", desc: "View assigned tasks" },
+  { id: "customer", label: "Customer" },
+  { id: "admin",    label: "Admin"    },
+  { id: "team_member", label: "Team" },
 ];
 
 export default function RegisterPage() {
@@ -20,105 +19,91 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password !== form.confirm) {
-      setError("Passwords do not match");
-      return;
-    }
+    if (form.password !== form.confirm) { setError("Passwords do not match"); return; }
     const result = await register(form.name, form.email, form.password, form.phone, selectedRole);
     if (result.success) {
-      // Redirect based on role
       if (result.user.role === "admin") navigate("/admin");
       else if (result.user.role === "team_member") navigate("/team");
       else navigate("/dashboard");
-    }
-    else setError(result.error);
+    } else setError(result.error);
   };
 
-  useEffect(() => {
-    document.body.classList.add("auth-compact");
-    return () => document.body.classList.remove("auth-compact");
-  }, []);
   return (
-    <div className="min-h-screen md:h-[calc(100vh-64px)] overflow-y-auto md:overflow-hidden bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center px-3 sm:px-4 py-6 md:py-0 auth-compact">
-      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-sm overflow-visible container">
-        <div className="text-center mb-4 sm:mb-6">
-          <div className="inline-flex h-10 sm:h-12 w-10 sm:w-12 items-center justify-center rounded-3xl bg-gradient-to-br from-orange-500 via-amber-400 to-pink-500 text-white shadow-md mx-auto mb-2 sm:mb-3">
-            <svg viewBox="0 0 24 24" className="h-5 sm:h-6 w-5 sm:w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <div className="h-[calc(100vh-64px)] bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center px-4 overflow-hidden">
+      <div className="w-full max-w-sm px-5 py-4 bg-white shadow-lg rounded-2xl">
+
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-white shadow-md rounded-xl bg-gradient-to-br from-orange-500 via-amber-400 to-pink-500">
+            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 3l2.3 5.2L20 10.5l-5.7 2.1L12 18l-2.3-5.4L4 10.5l5.7-2.3L12 3z" />
               <path d="M18.5 3.5l.7 1.8L21 6l-1.8.7-.7 1.8-.7-1.8L16 6l1.8-.7.7-1.8z" />
             </svg>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Create Account</h1>
-          <p className="text-gray-500 mt-1 text-sm sm:text-base">Join EventEase and book events</p>
+          <div>
+            <h1 className="text-base font-bold leading-none text-gray-800">Create Account</h1>
+            <p className="text-gray-400 text-[11px] leading-none mt-0.5">Join Momentix</p>
+          </div>
         </div>
 
         {/* Role Selection */}
-        <div className="mb-4 sm:mb-6">
-          <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Select Your Role</label>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="mb-3">
+          <label className="block text-[11px] font-semibold text-gray-600 mb-1.5">Select Role</label>
+          <div className="grid grid-cols-3 gap-1.5">
             {ROLE_OPTIONS.map((role) => (
-              <label key={role.id} className="relative">
-                <input
-                  type="radio"
-                  name="role"
-                  value={role.id}
-                  checked={selectedRole === role.id}
-                  onChange={() => setSelectedRole(role.id)}
-                  className="sr-only"
-                />
-                <div className={`rounded-lg border-2 transition p-2 sm:p-3 text-center cursor-pointer ${
-                  selectedRole === role.id 
-                    ? 'border-orange-500 bg-orange-50' 
-                    : 'border-gray-200 bg-white hover:border-orange-200'
-                }`}>
-                  <div className="text-xl sm:text-2xl mb-1">{role.icon}</div>
-                  <p className="font-semibold text-xs sm:text-sm text-gray-800">{role.label}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{role.desc}</p>
+              <label key={role.id} className="cursor-pointer">
+                <input type="radio" name="role" value={role.id} checked={selectedRole === role.id} onChange={() => setSelectedRole(role.id)} className="sr-only" />
+                <div className={`rounded-lg border-2 py-1.5 text-center transition ${selectedRole === role.id ? "border-orange-500 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-500 hover:border-orange-200"}`}>
+                  <p className="font-semibold text-[11px]">{role.label}</p>
                 </div>
               </label>
             ))}
           </div>
-
-          {selectedRole === 'admin' && (
-            <div className="mt-2 sm:mt-3 text-xs text-gray-600 bg-blue-50 rounded-lg p-2 sm:p-3">
-              Already an admin? <a href="/login" className="text-orange-500 font-semibold">Login here</a>
-            </div>
+          {selectedRole === "admin" && (
+            <p className="text-[10px] text-gray-500 bg-blue-50 rounded-lg px-2 py-1 mt-1">
+              Already admin? <Link to="/login" className="font-semibold text-orange-500">Login</Link>
+            </p>
           )}
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4 text-xs sm:text-sm">
+          <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-2.5 py-1.5 mb-2 text-[11px]">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-1.5">
           {[
-            { key: "name", label: "Full Name", type: "text", placeholder: "Rahul Sharma" },
-            { key: "email", label: "Email", type: "email", placeholder: "rahul@email.com" },
-            { key: "phone", label: "Phone Number", type: "tel", placeholder: "9876543210" },
-            { key: "password", label: "Password", type: "password", placeholder: "Min 6 characters" },
-            { key: "confirm", label: "Confirm Password", type: "password", placeholder: "Re-enter password" },
+            { key: "name",     label: "Full Name",       type: "text",     placeholder: "Rahul Sharma"    },
+            { key: "email",    label: "Email",            type: "email",    placeholder: "rahul@email.com" },
+            { key: "phone",    label: "Phone",            type: "tel",      placeholder: "9876543210"      },
+            { key: "password", label: "Password",         type: "password", placeholder: "Min 6 characters" },
+            { key: "confirm",  label: "Confirm Password", type: "password", placeholder: "Re-enter password" },
           ].map((field) => (
             <div key={field.key}>
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+              <label className="block text-[10px] font-medium text-gray-600 mb-0.5">{field.label}</label>
               <input
                 type={field.type}
                 required
                 value={form[field.key]}
                 onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
                 placeholder={field.placeholder}
-                className="w-full border border-gray-300 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 outline-none focus:border-orange-400 text-sm"
+                className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 text-xs transition"
               />
             </div>
           ))}
 
-          <Button type="submit" variant="primary" size="full" className="mt-3 sm:mt-4">Create Account</Button>
+          <button
+            type="submit"
+            className="w-full py-2 mt-1 text-sm font-semibold text-white transition bg-orange-500 rounded-lg hover:bg-orange-600"
+          >
+            Create Account
+          </button>
         </form>
 
-        <p className="text-center text-gray-500 mt-3 sm:mt-4 text-xs sm:text-sm">
+        <p className="text-center text-gray-400 mt-2 text-[10px]">
           Already have an account?{" "}
-          <Link to="/login" className="text-orange-500 font-semibold hover:underline">Login</Link>
+          <Link to="/login" className="font-semibold text-orange-500 hover:underline">Login</Link>
         </p>
       </div>
     </div>

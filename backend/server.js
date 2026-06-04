@@ -43,7 +43,7 @@ app.use("/api/events",   require("./routes/eventRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
 app.use("/api/users",    require("./routes/userRoutes"));
 
-app.get("/api", (req, res) => res.json({ message: "🎉 EventEase API is running!" }));
+app.get("/api", (req, res) => res.json({ message: "🎉 Momentix API is running!" }));
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 
 const PORT = process.env.PORT || 5000;

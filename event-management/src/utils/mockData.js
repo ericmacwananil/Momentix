@@ -1,5 +1,5 @@
 // src/utils/mockData.js
-// UPDATED: Real Unsplash images added for professional look
+// UPDATED: Carefully curated, event-specific real photos for every package
 
 export const events = [
   {
@@ -11,17 +11,24 @@ export const events = [
     price: 4999,
     rating: 4.8,
     reviews: 124,
-    // Real Unsplash images (free to use)
     images: [
-      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=600&auto=format&fit=crop",
+      // Colourful balloon arch / birthday hall decoration
+      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop",
+      // Gold & pink balloon decoration
+      "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop",
+      // Birthday cake with candles & balloons
+      "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&auto=format&fit=crop",
+      // Colourful party streamers & decorations
+      "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800&auto=format&fit=crop",
+      // Balloon bunch closeup
+      "https://images.unsplash.com/photo-1558636508-e0969431e349?w=800&auto=format&fit=crop",
     ],
     features: ["200+ Balloons", "LED Lights", "Custom Banner", "Flower Arch", "Photo Backdrop"],
     availability: true,
     duration: "3-4 hours setup",
     teamSize: 3,
   },
+
   {
     id: "2",
     title: "Royal Wedding Stage Decor",
@@ -32,15 +39,25 @@ export const events = [
     rating: 4.9,
     reviews: 87,
     images: [
-      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&auto=format&fit=crop",
+      // Elegant floral wedding table setup
+      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&auto=format&fit=crop",
+      // Grand wedding ceremony aisle with flowers
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop",
+      // White rose wedding arch
+      "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&auto=format&fit=crop",
+      // Candlelit romantic wedding reception
+      "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=800&auto=format&fit=crop",
+      // Gold & white wedding stage
+      "https://images.unsplash.com/photo-1464278533981-50106e6176b1?w=800&auto=format&fit=crop",
+      // Wedding flower centrepieces
+      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&auto=format&fit=crop",
     ],
     features: ["Royal Mandap", "Floral Stage", "LED Lighting", "Premium Draping", "Flower Shower"],
     availability: true,
     duration: "1 day setup",
     teamSize: 8,
   },
+
   {
     id: "3",
     title: "Corporate Event Setup",
@@ -51,15 +68,26 @@ export const events = [
     rating: 4.7,
     reviews: 56,
     images: [
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=600&auto=format&fit=crop",
+      // Conference hall with stage setup
+      
+      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop",
+      // Business conference audience
+      "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&auto=format&fit=crop",
+      // Corporate event with spotlights
+      "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&auto=format&fit=crop",
+      // Award ceremony stage
+      "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=800&auto=format&fit=crop",
+      // Team meeting / event decoration
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop",
+      // Corporate gala / networking event
+      "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop",
     ],
     features: ["Stage Setup", "Branded Backdrop", "Premium Seating", "AV Support", "Registration Desk"],
     availability: true,
     duration: "Half day setup",
     teamSize: 5,
   },
+
   {
     id: "4",
     title: "Baby Shower Decoration",
@@ -70,14 +98,23 @@ export const events = [
     rating: 4.6,
     reviews: 43,
     images: [
-      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop",
+      // Pastel baby shower balloon setup
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop",
+      // Baby shower dessert table
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop",
+      // Baby shower pastel theme decor
+      "https://images.unsplash.com/photo-1576858574144-9ae1ebcf5ae5?w=800&auto=format&fit=crop",
+      // Cute baby shower party setup
+      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&auto=format&fit=crop",
+      // Baby shower gifts & flowers
+      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop",
     ],
     features: ["Pastel Balloons", "Photo Props", "Dessert Table", "Welcome Banner", "Diaper Cake"],
     availability: false,
     duration: "2-3 hours setup",
     teamSize: 2,
   },
+
   {
     id: "5",
     title: "Anniversary Gold Theme Decor",
@@ -88,14 +125,23 @@ export const events = [
     rating: 4.8,
     reviews: 91,
     images: [
-      "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1464278533981-50106e6176b1?w=600&auto=format&fit=crop",
+      // Gold & candle romantic setup
+      "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=800&auto=format&fit=crop",
+      // Gold anniversary table decoration
+      "https://images.unsplash.com/photo-1464278533981-50106e6176b1?w=800&auto=format&fit=crop",
+      // Romantic rose petal & candle aisle
+      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&auto=format&fit=crop",
+      // Gold balloon arch
+      "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop",
+      // Elegant centrepiece with white roses
+      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&auto=format&fit=crop",
     ],
     features: ["Gold Balloon Arch", "Floral Centerpieces", "Candle Lighting", "Table Setup", "Couple Frame"],
     availability: true,
     duration: "4-5 hours setup",
     teamSize: 4,
   },
+
   {
     id: "6",
     title: "Kids Birthday Party Package",
@@ -106,8 +152,18 @@ export const events = [
     rating: 4.9,
     reviews: 210,
     images: [
-      "https://images.unsplash.com/photo-1558636508-e0969431e349?w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1502634881401-73bded46a16c?w=600&auto=format&fit=crop",
+      // Bright colourful kids party balloons
+      "https://images.unsplash.com/photo-1558636508-e0969431e349?w=800&auto=format&fit=crop",
+      // Kids birthday cake & candles
+      "https://images.unsplash.com/photo-1502634881401-73bded46a16c?w=800&auto=format&fit=crop",
+      // Colourful kids party table setup
+      "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800&auto=format&fit=crop",
+      // Fun balloon decorations for kids
+      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop",
+      // Kids party streamers & decorations
+      "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop",
+      // Birthday party confetti & fun
+      "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&auto=format&fit=crop",
     ],
     features: ["Theme Decorations", "Cartoon Characters", "Game Zone", "Balloon Art", "Birthday Crown"],
     availability: true,
