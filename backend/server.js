@@ -1,49 +1,34 @@
 // backend/server.js
 require("dotenv").config();
 const express = require("express");
-const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
 const paymentRoutes = require("./routes/paymentRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 
-
-dotenv.config();
+// Connect to DB
 connectDB();
 
 const app = express();
 
 // Simple request logger to help debug frontend/backend connectivity
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} from origin ${req.headers.origin}`);
   next();
 });
 
+// CORS configuration - allow all origins for debugging (we can restrict later)
 app.use(cors({ 
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://127.0.0.1:5173",
-      "http://127.0.0.1:5174",
-      "https://momentix-7g4y.vercel.app",
-      "https://momentix-ten.vercel.app"
-    ];
-    const allowed = !origin || allowedOrigins.includes(origin);
-    console.log(`CORS check for origin='${origin}': ${allowed ? "allowed" : "blocked"}`);
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: true,
   credentials: true 
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Routes
 app.use("/api/auth",     require("./routes/authRoutes"));
 app.use("/api/events",   require("./routes/eventRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
@@ -51,7 +36,22 @@ app.use("/api/users",    require("./routes/userRoutes"));
 app.use("/api/payments", paymentRoutes);
 app.use("/api/upload",   uploadRoutes);
 
-app.get("/api", (req, res) => res.json({ message: "🎉 Momentix API is running!" }));
+// Health check
+app.get("/api", (req, res) => res.json({ 
+  message: "🎉 Momentix API is running!",
+  hasJwtSecret: !!process.env.JWT_SECRET,
+  hasMongoUri: !!process.env.MONGO_URI,
+  hasCloudinary: !!process.env.CLOUDINARY_CLOUD_NAME,
+  hasRazorpay: !!process.env.RAZORPAY_KEY_ID
+}));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.stack);
+  res.status(500).json({ message: "Something went wrong!", error: err.message });
+});
+
+// 404 handler
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 
 const PORT = process.env.PORT || 5000;
