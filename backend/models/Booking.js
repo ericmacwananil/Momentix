@@ -25,6 +25,8 @@ const bookingSchema = new mongoose.Schema(
     },
     cancelledBy: { type: String, default: "" },
     assignedMember: { type: String, default: null },
+    paymentId: { type: String, default: "" },
+    paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
   },
   { timestamps: true },
 );

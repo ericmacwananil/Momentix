@@ -7,12 +7,58 @@ import { events as mockEvents } from "../utils/mockData";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import api from "../utils/api";
-import {Camera} from "lucide-react";
+import { Camera } from "lucide-react";
+import { loadRazorpay } from "../utils/loadRazorpay";
+import axios from "axios";
 
-// ─── Lightbox Modal ───────────────────────────────────────────────────────────
+const handlePayment = async (amount) => {
+  const res = await loadRazorpay();
+  if (!res) {
+    alert("Razorpay SDK failed to load. Check your internet.");
+    return;
+  }
+
+  // 1. Create order on backend
+  const { data } = await axios.post(
+    "/api/payments/create-order",
+    { amount },
+    { withCredentials: true }
+  );
+
+  // 2. Open Razorpay checkout
+  const options = {
+    key: import.meta.env.VITE_RAZORPAY_KEY_ID, // frontend key
+    amount: data.order.amount,
+    currency: "INR",
+    name: "Momentix",
+    description: "Event Decoration Booking",
+    order_id: data.order.id,
+    handler: async (response) => {
+      // 3. Verify on backend
+      const verifyRes = await axios.post(
+        "/api/payments/verify",
+        response,
+        { withCredentials: true }
+      );
+      if (verifyRes.data.success) {
+        alert("🎉 Payment Successful!");
+        // Navigate to success page or update booking status
+      }
+    },
+    prefill: {
+      name: user?.name,
+      email: user?.email,
+    },
+    theme: { color: "#7C3AED" }, // match your Momentix purple
+  };
+
+  const rzp = new window.Razorpay(options);
+  rzp.open();
+};
+
+// ─── Lightbox ────────────────────────────────────────────────────────────────
 function ImageGallery({ images, startIndex = 0, onClose }) {
   const [current, setCurrent] = useState(startIndex);
-
   const prev = useCallback(() => setCurrent((c) => (c - 1 + images.length) % images.length), [images.length]);
   const next = useCallback(() => setCurrent((c) => (c + 1) % images.length), [images.length]);
 
@@ -33,62 +79,27 @@ function ImageGallery({ images, startIndex = 0, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/96 flex flex-col">
-      {/* Invisible backdrop layer that hooks the close action safely */}
       <div className="absolute inset-0 z-0" onClick={onClose} />
-
-      {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between flex-shrink-0 px-5 py-3 border-b border-white/10 bg-black/20">
-        <span className="text-sm font-medium tracking-wide text-white/60">
-          {current + 1} &nbsp;/&nbsp; {images.length}
+      <div className="relative z-10 flex items-center justify-between flex-shrink-0 px-4 py-3 border-b sm:px-5 border-white/10 bg-black/20">
+        <span className="text-xs font-medium tracking-wide sm:text-sm text-white/60">
+          {current + 1} / {images.length}
         </span>
-        <button
-          onClick={onClose}
-          className="flex items-center justify-center text-xl font-bold transition rounded-full text-white/60 hover:text-white w-9 h-9 hover:bg-white/10"
-        >
-          ✕
-        </button>
+        <button onClick={onClose} className="flex items-center justify-center text-xl font-bold transition rounded-full text-white/60 hover:text-white w-9 h-9 hover:bg-white/10">✕</button>
       </div>
 
-      {/* Main image container (Triggers close when clicking the left/right empty tracks) */}
-      <div 
-        className="relative z-10 flex items-center justify-center flex-1 min-h-0 py-4 px-14"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
-      >
-        <button
-          onClick={prev}
-          className="absolute z-20 flex items-center justify-center text-2xl text-white transition -translate-y-1/2 rounded-full select-none left-3 top-1/2 w-11 h-11 bg-white/10 hover:bg-white/25"
-        >
-          ‹
-        </button>
-
-        <img
-          key={current}
-          src={images[current]}
-          alt={`Photo ${current + 1}`}
+      <div className="relative z-10 flex items-center justify-center flex-1 min-h-0 px-12 py-4 sm:px-14"
+        onClick={(e) => e.target === e.currentTarget && onClose()}>
+        <button onClick={prev} className="absolute z-20 flex items-center justify-center w-10 h-10 text-2xl text-white transition -translate-y-1/2 rounded-full select-none left-2 sm:left-3 top-1/2 sm:w-11 sm:h-11 bg-white/10 hover:bg-white/25">‹</button>
+        <img key={current} src={images[current]} alt={`Photo ${current + 1}`}
           className="relative z-10 object-contain max-w-full max-h-full shadow-2xl rounded-2xl"
-          onError={(e) => {
-            e.target.src = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format";
-          }}
-        />
-
-        <button
-          onClick={next}
-          className="absolute z-20 flex items-center justify-center text-2xl text-white transition -translate-y-1/2 rounded-full select-none right-3 top-1/2 w-11 h-11 bg-white/10 hover:bg-white/25"
-        >
-          ›
-        </button>
+          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format"; }} />
+        <button onClick={next} className="absolute z-20 flex items-center justify-center w-10 h-10 text-2xl text-white transition -translate-y-1/2 rounded-full select-none right-2 sm:right-3 top-1/2 sm:w-11 sm:h-11 bg-white/10 hover:bg-white/25">›</button>
       </div>
 
-      {/* Thumbnail strip */}
       <div className="relative z-10 flex justify-center flex-shrink-0 gap-2 px-4 py-3 overflow-x-auto border-t border-white/10 bg-black/20">
         {images.map((img, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all ${
-              current === i ? "border-orange-400 scale-110 opacity-100" : "border-transparent opacity-40 hover:opacity-75"
-            }`}
-          >
+          <button key={i} onClick={() => setCurrent(i)}
+            className={`flex-shrink-0 w-14 h-10 sm:w-16 sm:h-12 rounded-lg overflow-hidden border-2 transition-all ${current === i ? "border-orange-400 scale-110 opacity-100" : "border-transparent opacity-40 hover:opacity-75"}`}>
             <img src={img} alt="" className="object-cover w-full h-full" />
           </button>
         ))}
@@ -97,7 +108,7 @@ function ImageGallery({ images, startIndex = 0, onClose }) {
   );
 }
 
-// ─── Curated photo banks (6 per type, used when backend has fewer images) ────
+// ─── Photo banks ──────────────────────────────────────────────────────────────
 const PHOTO_BANK = {
   birthday: [
     "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop",
@@ -134,44 +145,24 @@ const PHOTO_BANK = {
 
 const MIN_PHOTOS = 5;
 
-/** Always returns at least MIN_PHOTOS deduplicated images */
 function buildImageList(raw) {
   const seen = new Set();
   const result = [];
-
-  const add = (url) => {
-    if (!url || seen.has(url)) return;
-    seen.add(url);
-    result.push(url);
-  };
-
-  // 1. Backend images
+  const add = (url) => { if (!url || seen.has(url)) return; seen.add(url); result.push(url); };
   (raw.images || []).forEach(add);
   if (raw.image) add(raw.image);
-
-  // 2. Matching mock event images (by title or id)
-  const mockMatch = mockEvents.find(
-    (e) =>
-      e.id === raw._id || e._id === raw._id || e.id === raw.id ||
-      (e.title || "").trim().toLowerCase() === (raw.title || "").trim().toLowerCase()
+  const mockMatch = mockEvents.find((e) =>
+    e.id === raw._id || e._id === raw._id || e.id === raw.id ||
+    (e.title || "").trim().toLowerCase() === (raw.title || "").trim().toLowerCase()
   );
-  if (mockMatch) {
-    (mockMatch.images || []).forEach(add);
-    if (mockMatch.image) add(mockMatch.image);
-  }
-
-  // 3. Fill remaining from type-based photo bank
+  if (mockMatch) { (mockMatch.images || []).forEach(add); if (mockMatch.image) add(mockMatch.image); }
   const type = (raw.eventType || raw.type || "other").toLowerCase();
   const bank = PHOTO_BANK[type] || PHOTO_BANK.other;
-  for (const url of bank) {
-    if (result.length >= MIN_PHOTOS) break;
-    add(url);
-  }
-
+  for (const url of bank) { if (result.length >= MIN_PHOTOS) break; add(url); }
   return result;
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Main ────────────────────────────────────────────────────────────────────
 export default function EventDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -202,10 +193,7 @@ export default function EventDetailPage() {
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
-    setError("");
-    setActiveImg(0);
-
+    setLoading(true); setError(""); setActiveImg(0);
     api.get(`/events/${id}`)
       .then((res) => {
         if (!mounted) return;
@@ -218,15 +206,20 @@ export default function EventDetailPage() {
         else setError("Event not found");
       })
       .finally(() => { if (mounted) setLoading(false); });
-
     return () => { mounted = false; };
   }, [id]);
 
   const openGallery = (index = 0) => { setGalleryStart(index); setGalleryOpen(true); };
 
-  if (loading) return <div className="py-20 text-center text-gray-500">Loading...</div>;
-  if (error || !event) return (
+  if (loading) return (
     <div className="py-20 text-center">
+      <div className="w-10 h-10 mx-auto border-4 border-orange-200 rounded-full border-t-orange-500 animate-spin"></div>
+      <p className="mt-4 text-sm text-gray-500">Loading...</p>
+    </div>
+  );
+
+  if (error || !event) return (
+    <div className="px-4 py-20 text-center">
       <p className="mb-4 text-5xl">🤷</p>
       <p className="text-xl text-gray-600">Event not found</p>
       <Link to="/events" className="inline-block mt-4 text-orange-500">← Back to Events</Link>
@@ -252,60 +245,37 @@ export default function EventDetailPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 sm:gap-10">
 
-          {/* ── LEFT: IMAGES ── */}
+          {/* LEFT: Images */}
           <div>
-            {/* Hero image */}
-            <div
-              className="relative rounded-2xl overflow-hidden h-56 sm:h-72 md:h-[360px] bg-gray-100 shadow-lg cursor-pointer group"
-              onClick={() => openGallery(activeImg)}
-            >
-              <img
-                src={event.images[activeImg]}
-                alt={event.title}
+            <div className="relative rounded-2xl overflow-hidden h-56 sm:h-72 md:h-[360px] bg-gray-100 shadow-lg cursor-pointer group"
+              onClick={() => openGallery(activeImg)}>
+              <img src={event.images[activeImg]} alt={event.title}
                 className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                onError={(e) => {
-                  e.target.src = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format";
-                }}
-              />
-              {/* Hover overlay */}
+                onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format"; }} />
               <div className="absolute inset-0 flex items-center justify-center transition-colors bg-black/0 group-hover:bg-black/25">
-                <div className="px-4 py-2 text-sm font-semibold text-gray-800 transition-opacity rounded-full shadow opacity-0 group-hover:opacity-100 bg-white/90">
-                  🔍 Click to enlarge
-                </div>
+                <div className="px-4 py-2 text-sm font-semibold text-gray-800 transition-opacity rounded-full shadow opacity-0 group-hover:opacity-100 bg-white/90">🔍 Click to enlarge</div>
               </div>
-              {/* Badge */}
               <div className="absolute bottom-3 right-3 bg-black/55 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm pointer-events-none">
                 📷 {event.images.length} photos
               </div>
             </div>
 
-            {/* Thumbnail strip */}
             <div className="flex gap-2 pb-1 mt-3 overflow-x-auto">
               {event.images.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveImg(i)}
-                  className={`flex-shrink-0 w-16 h-12 sm:w-20 sm:h-14 rounded-xl overflow-hidden border-2 transition-all ${
-                    activeImg === i
-                      ? "border-orange-500 scale-105 shadow-md"
-                      : "border-transparent opacity-55 hover:opacity-100"
-                  }`}
-                >
+                <button key={i} onClick={() => setActiveImg(i)}
+                  className={`flex-shrink-0 w-14 h-10 sm:w-20 sm:h-14 rounded-xl overflow-hidden border-2 transition-all ${activeImg === i ? "border-orange-500 scale-105 shadow-md" : "border-transparent opacity-55 hover:opacity-100"}`}>
                   <img src={img} alt="" className="object-cover w-full h-full" />
                 </button>
               ))}
             </div>
 
-            {/* View All button */}
-            <button
-              onClick={() => openGallery(0)}
-              className="mt-3 w-full flex items-center justify-center gap-2 border-2 border-dashed border-orange-300 hover:border-orange-500 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold text-sm py-2.5 rounded-xl transition-all"
-            >
-              <Camera size={18} className="text-black"/> View All {event.images.length} Photos
+            <button onClick={() => openGallery(0)}
+              className="mt-3 w-full flex items-center justify-center gap-2 border-2 border-dashed border-orange-300 hover:border-orange-500 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold text-sm py-2.5 rounded-xl transition-all">
+              <Camera size={16} /> View All {event.images.length} Photos
             </button>
           </div>
 
-          {/* ── RIGHT: DETAILS ── */}
+          {/* RIGHT: Details */}
           <div>
             <span className={`text-xs px-3 py-1 rounded-full font-semibold capitalize ${tagColors[event.eventType] || "bg-gray-100 text-gray-700"}`}>
               {event.eventType}
@@ -315,7 +285,6 @@ export default function EventDetailPage() {
               {event.title}
             </h1>
 
-            {/* Rating */}
             <div className="flex items-center gap-2 mt-2">
               <div className="flex">
                 {[1,2,3,4,5].map(i => (
@@ -326,17 +295,14 @@ export default function EventDetailPage() {
               <span className="text-xs text-gray-400 sm:text-sm">({event.reviews} reviews)</span>
             </div>
 
-            <p className="mt-4 text-sm leading-relaxed text-gray-600 sm:text-base">
-              {event.description}
-            </p>
+            <p className="mt-4 text-sm leading-relaxed text-gray-600 sm:text-base">{event.description}</p>
 
-            {/* Meta */}
             <div className="grid grid-cols-2 gap-3 mt-5">
               {[
                 { label: "Setup Duration", value: event.duration, icon: "⏱️" },
                 { label: "Team Size", value: `${event.teamSize} Members`, icon: "👷" },
               ].map((m) => (
-                <div key={m.label} className="p-3 border border-gray-100 bg-gray-50 rounded-xl sm:p-4">
+                <div key={m.label} className="p-3 border border-gray-100 sm:p-4 bg-gray-50 rounded-xl">
                   <p className="mb-1 text-base">{m.icon}</p>
                   <p className="text-xs text-gray-400">{m.label}</p>
                   <p className="font-semibold text-gray-800 text-xs sm:text-sm mt-0.5">{m.value}</p>
@@ -350,8 +316,8 @@ export default function EventDetailPage() {
               </div>
             )}
 
-            {/* Price & Book */}
-            <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100">
+            {/* ✅ Price & Book — flex-wrap so button doesn't overflow on small phones */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-6 mt-6 border-t border-gray-100">
               <div>
                 <p className="text-xs text-gray-400">Starting from</p>
                 <p className="text-3xl font-bold text-orange-500 sm:text-4xl">
@@ -370,14 +336,12 @@ export default function EventDetailPage() {
           </div>
         </div>
 
-        {/* ── FEATURES ── */}
-        <div className="mt-12">
-          <h2 className="mb-5 text-xl font-bold text-gray-800 sm:text-2xl">
-            What's Included in this Package
-          </h2>
+        {/* Features */}
+        <div className="mt-10 sm:mt-12">
+          <h2 className="mb-5 text-xl font-bold text-gray-800 sm:text-2xl">What's Included in this Package</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
             {event.features.map((f) => (
-              <div key={f} className="flex items-center gap-3 p-4 border border-green-100 bg-green-50 rounded-xl">
+              <div key={f} className="flex items-center gap-3 p-3 border border-green-100 sm:p-4 bg-green-50 rounded-xl">
                 <div className="flex items-center justify-center flex-shrink-0 text-sm font-bold text-green-600 bg-green-100 rounded-full w-7 h-7">✓</div>
                 <span className="text-sm font-medium text-gray-700">{f}</span>
               </div>
@@ -385,66 +349,43 @@ export default function EventDetailPage() {
           </div>
         </div>
 
-        {/* ── PHOTO GALLERY GRID ── */}
-        <div className="mt-12">
+        {/* Photo Gallery Grid */}
+        <div className="mt-10 sm:mt-12">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-800 sm:text-2xl">📸 Event Photos</h2>
-            <button
-              onClick={() => openGallery(0)}
-              className="text-sm font-semibold text-orange-500 hover:underline"
-            >
-              View all →
-            </button>
+            <button onClick={() => openGallery(0)} className="text-sm font-semibold text-orange-500 hover:underline">View all →</button>
           </div>
-
-          {/* Bento grid — first photo large, rest fill in */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 auto-rows-[160px]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 auto-rows-[140px] sm:auto-rows-[160px]">
             {event.images.map((img, i) => (
-              <button
-                key={i}
-                onClick={() => openGallery(i)}
-                className={`relative overflow-hidden rounded-2xl bg-gray-100 group ${
-                  i === 0 ? "row-span-2 col-span-2 sm:col-span-1" : ""
-                }`}
-              >
-                <img
-                  src={img}
-                  alt={`Photo ${i + 1}`}
+              <button key={i} onClick={() => openGallery(i)}
+                className={`relative overflow-hidden rounded-2xl bg-gray-100 group ${i === 0 ? "row-span-2 col-span-2 sm:col-span-1" : ""}`}>
+                <img src={img} alt={`Photo ${i + 1}`}
                   className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                  onError={(e) => {
-                    e.target.src = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format";
-                  }}
-                />
+                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format"; }} />
                 <div className="absolute inset-0 flex items-center justify-center transition-colors bg-black/0 group-hover:bg-black/35">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity text-white text-sm font-semibold bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                    🔍 View
-                  </div>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity text-white text-sm font-semibold bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm">🔍 View</div>
                 </div>
               </button>
             ))}
           </div>
-
-          <button
-            onClick={() => openGallery(0)}
-            className="flex items-center justify-center w-full gap-2 py-3 mt-4 text-sm font-semibold text-gray-500 transition-all border border-gray-200 bg-gray-50 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 rounded-xl"
-          >
-          <Camera size={18} />
-          Open full-screen gallery &nbsp;({event.images.length} photos)
+          <button onClick={() => openGallery(0)}
+            className="flex items-center justify-center w-full gap-2 py-3 mt-4 text-sm font-semibold text-gray-500 transition-all border border-gray-200 bg-gray-50 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 rounded-xl">
+            <Camera size={18} /> Open full-screen gallery ({event.images.length} photos)
           </button>
         </div>
 
-        {/* ── BOTTOM CTA ── */}
-        <div className="flex flex-col items-center justify-between gap-6 p-6 mt-12 border border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl sm:p-8 md:flex-row">
+        {/* Bottom CTA */}
+        <div className="flex flex-col items-start justify-between gap-4 p-5 mt-10 border border-orange-200 md:flex-row md:items-center sm:gap-6 sm:p-8 sm:mt-12 bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl">
           <div>
-            <h3 className="text-lg font-bold text-gray-800 sm:text-xl">Have questions about this package?</h3>
+            <h3 className="text-base font-bold text-gray-800 sm:text-xl">Have questions about this package?</h3>
             <p className="mt-1 text-sm text-gray-600">
               Call us: <strong className="text-orange-600">+91 98765 43210</strong> or book directly!
             </p>
           </div>
           {event.availability && (
             user
-              ? <Button to={`/booking/${event.id}`} variant="primary" size="md" className="whitespace-nowrap">Book This Package</Button>
-              : <Button to="/login" variant="primary" size="md" className="whitespace-nowrap">Login to Book</Button>
+              ? <Button to={`/booking/${event.id}`} variant="primary" size="md" className="w-full whitespace-nowrap md:w-auto">Book This Package</Button>
+              : <Button to="/login" variant="primary" size="md" className="w-full whitespace-nowrap md:w-auto">Login to Book</Button>
           )}
         </div>
       </div>
