@@ -55,4 +55,4 @@ app.use((err, req, res, next) => {
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));// Last updated: Tue Jun  9 16:47:05 IST 2026
