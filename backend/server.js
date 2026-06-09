@@ -6,6 +6,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
 const paymentRoutes = require("./routes/paymentRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 
 dotenv.config();
@@ -47,6 +48,7 @@ app.use("/api/events",   require("./routes/eventRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
 app.use("/api/users",    require("./routes/userRoutes"));
 app.use("/api/payments", paymentRoutes);
+app.use("/api/upload",   uploadRoutes);
 
 app.get("/api", (req, res) => res.json({ message: "🎉 Momentix API is running!" }));
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));

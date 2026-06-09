@@ -59,6 +59,7 @@ export default function AdminManageEventsPage() {
   const [filterType,    setFilterType]    = useState("");
   const [toast,         setToast]         = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchEvents = async () => {
@@ -78,6 +79,36 @@ export default function AdminManageEventsPage() {
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
+  };
+
+  // ── Upload image to Cloudinary ────────────────────────────────────────────
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await api.post("/upload/image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data.success && res.data.url) {
+        // Add new image to form
+        setForm((f) => ({
+          ...f,
+          images: f.images ? `${f.images}\n${res.data.url}` : res.data.url,
+        }));
+        showToast("Image uploaded successfully!");
+      }
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      showToast("Failed to upload image", "error");
+    } finally {
+      setUploading(false);
+    }
   };
 
   // ── Open add form ─────────────────────────────────────────────────────────
@@ -325,9 +356,28 @@ export default function AdminManageEventsPage() {
                 </Field>
               </div>
 
-              {/* Images */}
+              {/* Images Upload + URLs */}
               <div className="md:col-span-2">
-                <Field label="Image URLs" hint="One URL per line — paste Unsplash or any hosted image link">
+                <Field label="Event Images" hint="Upload images directly or paste URLs">
+                  {/* File Upload */}
+                  <div className="mb-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                      className="block w-full text-sm text-slate-400
+                        file:mr-3 file:py-2 file:px-4
+                        file:rounded-xl file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-orange-500 file:text-white
+                        hover:file:bg-orange-600
+                        file:cursor-pointer"
+                    />
+                    {uploading && <p className="text-xs text-orange-300 mt-2">Uploading image…</p>}
+                  </div>
+
+                  {/* Image URLs Textarea */}
                   <Textarea
                     name="images"
                     rows={4}
