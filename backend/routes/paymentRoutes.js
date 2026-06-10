@@ -8,18 +8,29 @@ const Booking = require("../models/Booking");
 // 1. Create Order
 router.post("/create-order", async (req, res) => {
   const { amount } = req.body; // amount in INR (e.g. 5000 = ₹5000)
+  
+  console.log("📥 Creating Razorpay order with amount:", amount);
+  console.log("🔑 Razorpay key_id:", process.env.RAZORPAY_KEY_ID ? "set" : "NOT set");
+  console.log("🔑 Razorpay key_secret:", process.env.RAZORPAY_KEY_SECRET ? "set" : "NOT set");
+
+  // Validate the amount
+  const numericAmount = Number(amount);
+  if (!numericAmount || numericAmount <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid amount. Must be a positive number." });
+  }
 
   const options = {
-    amount: amount * 100, // Razorpay expects paise
+    amount: numericAmount * 100, // Razorpay expects paise
     currency: "INR",
     receipt: `receipt_${Date.now()}`,
   };
 
   try {
     const order = await razorpay.orders.create(options);
+    console.log("✅ Razorpay order created:", order.id);
     res.json({ success: true, order });
   } catch (err) {
-    console.error("Error creating Razorpay order:", err);
+    console.error("❌ Error creating Razorpay order:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
