@@ -112,17 +112,20 @@ export default function AdminDashboard() {
       {/* All Bookings */}
       <h2 className="text-xl font-bold text-gray-800 mb-4">All Bookings</h2>
       <div className="space-y-4">
-        {bookings.map((booking) => (
+        {bookings.map((booking) => {
+          const eventTitle = booking?.eventId?.title || booking?.eventTitle || "Event";
+          const price = booking?.price || 0;
+          return (
           <div key={booking._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 flex-wrap mb-2">
-                  <h3 className="font-bold text-gray-800">{booking.eventTitle}</h3>
+                  <h3 className="font-bold text-gray-800">{eventTitle}</h3>
                   <StatusBadge status={booking.status} />
                 </div>
                 <p className="text-sm text-gray-600">👤 {booking.customerName} | 📞 {booking.customerPhone}</p>
-                <p className="text-sm text-gray-500">📅 {booking.eventDate} | 📍 {booking.venueAddress}</p>
-                <p className="text-sm font-bold text-orange-500 mt-1">₹{booking.price.toLocaleString()}</p>
+                <p className="text-sm text-gray-500">📅 {new Date(booking.eventDate).toLocaleDateString()} | 📍 {booking.venueAddress}</p>
+                <p className="text-sm font-bold text-orange-500 mt-1">₹{price.toLocaleString()}</p>
                 {booking.notes && <p className="text-xs text-gray-500 mt-2">📝 {booking.notes}</p>}
               </div>
               <div className="flex flex-col gap-2">
@@ -140,7 +143,8 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Cancelled Bookings */}
@@ -154,25 +158,28 @@ export default function AdminDashboard() {
           ) : (
             bookings
               .filter((booking) => booking.status === "cancelled")
-              .map((booking) => (
+              .map((booking) => {
+                const eventTitle = booking?.eventId?.title || booking?.eventTitle || "Event";
+                const price = booking?.price || 0;
+                return (
                 <div key={booking._id} className="bg-red-50 rounded-2xl border border-red-100 p-5">
                   <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
                     <div>
                       <div className="flex items-center gap-3 flex-wrap mb-2">
-                        <h3 className="font-bold text-gray-800">{booking.eventTitle}</h3>
+                        <h3 className="font-bold text-gray-800">{eventTitle}</h3>
                         <StatusBadge status={booking.status} />
                       </div>
                       <p className="text-sm text-gray-600">👤 {booking.customerName} | 📞 {booking.customerPhone}</p>
-                      <p className="text-sm text-gray-500">📅 {booking.eventDate} | 📍 {booking.venueAddress}</p>
+                      <p className="text-sm text-gray-500">📅 {new Date(booking.eventDate).toLocaleDateString()} | 📍 {booking.venueAddress}</p>
                       <p className="text-sm text-gray-500 mt-1">Cancelled by: {booking.cancelledBy || "customer"}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-400">Amount</p>
-                      <p className="font-bold text-lg text-red-500">₹{booking.price.toLocaleString()}</p>
+                      <p className="font-bold text-lg text-red-500">₹{price.toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
-              ))
+              )})
           )}
         </div>
       </div>

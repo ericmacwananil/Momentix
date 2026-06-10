@@ -85,20 +85,23 @@ export default function CustomerDashboard() {
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {bookings.map((booking) => (
+            {bookings.map((booking) => {
+              const eventTitle = booking?.eventId?.title || "Event";
+              const price = booking?.price || 0;
+              return (
               <div key={booking._id} className="p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 hover:bg-gray-50 transition">
                 <div className="flex-1">
-                  <h3 className="font-bold text-gray-800 text-sm sm:text-base">{booking.eventId.title}</h3>
+                  <h3 className="font-bold text-gray-800 text-sm sm:text-base">{eventTitle}</h3>
                   <p className="text-xs sm:text-sm text-gray-500 mt-1">📅 {new Date(booking.eventDate).toLocaleDateString()}</p>
                   <p className="text-xs sm:text-sm text-gray-500">📍 {booking.venueAddress}</p>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                   <div className="text-right hidden sm:block">
                     <p className="text-xs text-gray-400">Amount</p>
-                    <p className="font-bold text-base sm:text-lg text-orange-500">₹{booking.price.toLocaleString()}</p>
+                    <p className="font-bold text-base sm:text-lg text-orange-500">₹{price.toLocaleString()}</p>
                   </div>
                   <div className="block sm:hidden">
-                    <p className="font-bold text-base text-orange-500">₹{booking.price.toLocaleString()}</p>
+                    <p className="font-bold text-base text-orange-500">₹{price.toLocaleString()}</p>
                   </div>
                   <StatusBadge status={booking.status} />
                   {booking.status !== "cancelled" && booking.status !== "completed" && (
@@ -113,7 +116,8 @@ export default function CustomerDashboard() {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
