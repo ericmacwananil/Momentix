@@ -7,19 +7,48 @@ import sleep from "../utils/sleep";
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isNumeric = /^\d+$/.test(identifier.trim());
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    const trimmedId = identifier.trim();
+    if (!trimmedId) {
+      setError("Please enter your email address or 10-digit mobile number");
+      return;
+    }
+
+    // Mobile number validation (if numbers entered)
+    if (/^\d+$/.test(trimmedId)) {
+      if (trimmedId.length !== 10) {
+        setError("Mobile number must be exactly 10 digits (e.g. 9876543210)");
+        return;
+      }
+    } else if (!trimmedId.includes("@")) {
+      setError("Please enter a valid email address or 10-digit mobile number");
+      return;
+    }
+
+    // Password validation: must be at least 6 characters
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters or digits");
+      return;
+    }
+
+    setLoading(true);
     const start = Date.now();
-    const result = await login(form.email, form.password);
+    const result = await login(trimmedId, password);
     const elapsed = Date.now() - start;
-    if (elapsed < 1000) await sleep(1000 - elapsed);
+    if (elapsed < 600) await sleep(600 - elapsed);
     setLoading(false);
+
     if (result.success) {
       if (result.user.role === "admin") navigate("/admin");
       else if (result.user.role === "team_member") navigate("/team");
@@ -30,7 +59,6 @@ export default function LoginPage() {
   };
 
   return (
-    // ✅ min-h instead of h, removed overflow-hidden, added py for breathing room
     <div className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm p-6 bg-white shadow-lg rounded-2xl sm:p-8">
 
@@ -48,39 +76,84 @@ export default function LoginPage() {
 
         <div className="flex items-center gap-2 mb-5">
           <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs font-medium text-gray-400">OR LOGIN</span>
+          <span className="text-xs font-medium text-gray-400">LOGIN WITH EMAIL OR MOBILE</span>
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
+        {/* Error notification */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-2.5 mb-4 text-xs sm:text-sm">
-            {error}
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-2.5 mb-4 text-xs sm:text-sm">
+            <div className="flex items-start gap-1.5">
+              <span className="text-red-500 font-bold">⚠️</span>
+              <div className="flex-1 leading-snug">
+                <span>{error}</span>
+                {error.includes("Network Error") && (
+                  <p className="mt-1 text-[11px] text-red-600 font-normal">
+                    Tip: If visiting the Vercel deployment, ensure your backend service is deployed and <code className="font-mono bg-red-100 px-1 rounded">VITE_API_BASE_URL</code> is set in Vercel settings.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            {/* ✅ Bumped labels from text-[10px] to text-xs — readable on mobile */}
-            <label className="block mb-1 text-xs font-semibold text-gray-700">Email Address</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-gray-700">Email or Mobile Number</label>
+              {isNumeric && (
+                <span
+                  className={`text-[11px] font-mono px-1.5 py-0.5 rounded ${
+                    identifier.trim().length === 10
+                      ? "bg-green-100 text-green-700 font-semibold"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {identifier.trim().length}/10 digits
+                </span>
+              )}
+            </div>
             <input
-              type="email"
+              type="text"
               required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 text-sm transition"
-              placeholder="your@email.com"
+              placeholder="rahul@email.com or 9876543210"
             />
           </div>
+
           <div>
-            <label className="block mb-1 text-xs font-semibold text-gray-700">Password</label>
-            <input
-              type="password"
-              required
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 text-sm transition"
-              placeholder="Enter your password"
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-gray-700">Password</label>
+              <span
+                className={`text-[11px] px-1.5 py-0.5 rounded ${
+                  password.length >= 6
+                    ? "bg-green-100 text-green-700 font-semibold"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {password.length >= 6 ? "✓ Min 6 met" : `${password.length}/6 min`}
+              </span>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg pl-3 pr-10 py-2.5 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 text-sm transition"
+                placeholder="Enter password (min 6 characters)"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-xs font-medium focus:outline-none"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
           <Button type="submit" disabled={loading} variant="primary" size="full">

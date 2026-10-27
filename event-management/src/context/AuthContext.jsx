@@ -11,68 +11,149 @@ export function AuthProvider({ children }) {
   // On app load — check if user is logged in
   useEffect(() => {
     const checkUser = async () => {
-      // First try to get from localStorage
-      const start = Date.now();
       const storedUser = localStorage.getItem("user");
+      const storedToken = localStorage.getItem("token");
+
+      // Populate immediately from localStorage so UI is responsive
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
-        const elapsed = Date.now() - start;
-        if (elapsed < 1000) await new Promise(r => setTimeout(r, 1000 - elapsed));
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          localStorage.removeItem("user");
+        }
+      }
+
+      // If user was never logged in (no user and no token), do not make an unnecessary network call
+      if (!storedUser && !storedToken) {
+        setUser(null);
         setLoading(false);
         return;
       }
 
-      // Then try backend
+      // If a session exists, verify with backend
       try {
         const res = await api.get("/auth/me", { timeout: 5000 });
-        if (res.data.user) {
+        if (res.data && res.data.user) {
           setUser(res.data.user);
           localStorage.setItem("user", JSON.stringify(res.data.user));
         }
       } catch (err) {
-        // backend may be unavailable — remain signed out
-        console.log("⚠️ Auth check failed (backend):", err.message);
-        setUser(null);
+        // If 401 Unauthorized, token has expired or is invalid
+        if (err?.response?.status === 401) {
+          console.log("⚠️ Session expired or invalid:", err.message);
+          setUser(null);
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+        } else {
+          // If network error, preserve storedUser for offline preview
+          console.warn("⚠️ Backend session check skipped (server offline or network error):", err.message);
+        }
       } finally {
         setLoading(false);
       }
     };
+
     checkUser();
   }, []);
 
-  const login = async (email, password) => {
-    // Try backend login first
+  const login = async (identifier, password) => {
+    const trimmedId = (identifier || "").trim();
+    const isNumeric = /^\d+$/.test(trimmedId);
+
+    if (!trimmedId) {
+      return { success: false, error: "Please enter your email or 10-digit mobile number" };
+    }
+
+    if (isNumeric && trimmedId.length !== 10) {
+      return { success: false, error: "Mobile number must be exactly 10 digits" };
+    }
+
+    if (!password || password.length < 6) {
+      return { success: false, error: "Password must be at least 6 characters" };
+    }
+
     try {
-      const res = await api.post("/auth/login", { email, password }, { timeout: 5000 });
+      const payload = isNumeric
+        ? { phone: trimmedId, password }
+        : { email: trimmedId, password };
+
+      const res = await api.post("/auth/login", payload, { timeout: 8000 });
       if (res.data && res.data.user) {
         setUser(res.data.user);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        if (res.data.token) {
+          localStorage.setItem("token", res.data.token);
+        }
         return { success: true, user: res.data.user };
       }
     } catch (e) {
-      console.log("⚠️ Backend login failed:", e.message);
-      return { success: false, error: "Backend unavailable or request failed" };
+      console.warn("⚠️ Backend login failed:", e?.message);
+      if (e?.response?.data?.message) {
+        return { success: false, error: e.response.data.message };
+      }
+      if (e?.code === "ERR_NETWORK" || !e?.response) {
+        return {
+          success: false,
+          error: "Network Error: Cannot connect to backend server. Please verify backend is running and VITE_API_BASE_URL is configured."
+        };
+      }
+      return { success: false, error: e.message || "Invalid credentials" };
     }
 
     return { success: false, error: "Invalid email or password" };
   };
 
   const register = async (name, email, password, phone, role = "customer") => {
-    // Try backend registration first
-    // Client-side validation to avoid common server rejections
-    if (!password || password.length < 6) return { success: false, error: "Password must be at least 6 characters" };
+    // Client-side validation to avoid common rejections
+    if (!name || !name.trim()) {
+      return { success: false, error: "Please enter your full name" };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      return { success: false, error: "Please enter a valid email address" };
+    }
+
+    const cleanPhone = (phone || "").toString().replace(/\D/g, "");
+    if (cleanPhone.length !== 10) {
+      return { success: false, error: "Mobile number must be exactly 10 digits" };
+    }
+
+    if (!password || password.length < 6) {
+      return { success: false, error: "Password must be at least 6 characters" };
+    }
+
     try {
-      console.log("[Auth] register payload:", { name, email, password: password ? '***' : '', phone, role });
-      const res = await api.post("/auth/register", { name, email, password, phone, role }, { timeout: 5000 });
+      const payload = {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        phone: cleanPhone,
+        role,
+      };
+
+      console.log("[Auth] register payload:", { ...payload, password: "***" });
+      const res = await api.post("/auth/register", payload, { timeout: 10000 });
       if (res.data && res.data.user) {
         setUser(res.data.user);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        if (res.data.token) {
+          localStorage.setItem("token", res.data.token);
+        }
         return { success: true, user: res.data.user };
       }
     } catch (e) {
-      console.error("⚠️ Backend register failed:", e && e.message, e && e.response && e.response.data ? e.response.data : null);
-      const serverMessage = e && e.response && e.response.data && e.response.data.message;
-      return { success: false, error: serverMessage || "Backend unavailable or request failed" };
+      console.error("⚠️ Backend register failed:", e?.message, e?.response?.data || null);
+      if (e?.response?.data?.message) {
+        return { success: false, error: e.response.data.message };
+      }
+      if (e?.code === "ERR_NETWORK" || !e?.response) {
+        return {
+          success: false,
+          error: "Network Error: Cannot connect to backend server. If deployed on Vercel, please ensure backend is hosted and VITE_API_BASE_URL is configured."
+        };
+      }
+      return { success: false, error: e.message || "Registration failed" };
     }
 
     return { success: false, error: "Registration failed" };
@@ -86,6 +167,7 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
     }
   };
 

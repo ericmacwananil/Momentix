@@ -7,12 +7,13 @@ const connectDB = async () => {
       throw new Error("MONGO_URI not set in environment");
     }
     console.log("⏳ Attempting to connect to MongoDB...");
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
+    });
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`❌ MongoDB Error: ${error.message}`);
-    console.error(error.stack);
-    console.log(`⚠️  Running with mock data fallback. To fix, verify MONGO_URI in backend/.env and allow your IP in Atlas network access.`);
+    console.log(`⚠️  To fix: Check MONGO_URI in backend/.env, ensure the Atlas cluster is active and your IP (or 0.0.0.0/0) is allowed.`);
   }
 };
 
