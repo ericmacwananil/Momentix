@@ -25,6 +25,13 @@ router.post("/create-order", async (req, res) => {
     receipt: `receipt_${Date.now()}`,
   };
 
+  if (!razorpay) {
+    return res.status(500).json({
+      success: false,
+      message: "Payment service temporarily unavailable. RAZORPAY_KEY_ID is not configured in server environment."
+    });
+  }
+
   try {
     const order = await razorpay.orders.create(options);
     console.log("✅ Razorpay order created:", order.id);
